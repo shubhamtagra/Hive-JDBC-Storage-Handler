@@ -2,6 +2,10 @@ package org.apache.hadoop.hive.jdbc.storagehandler;
 
 import java.util.Map;
 import java.util.Properties;
+import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -12,7 +16,9 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.index.IndexSearchCondition;
 import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
+import org.apache.hadoop.hive.ql.index.IndexPredicateAnalyzer;
 import org.apache.hadoop.hive.ql.metadata.HiveStoragePredicateHandler;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
@@ -24,8 +30,13 @@ import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.JobConf;
-import org.apache.hadoop.mapred.lib.db.DBConfiguration;
 import org.apache.hadoop.hive.ql.metadata.DefaultStorageHandler;
+import org.apache.hadoop.hive.ql.plan.TableScanDesc;
+
+import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDescUtils;
+import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
+
 /**
  * -- required settings
  * set mapred.jdbc.driver.class=..;
@@ -97,6 +108,7 @@ public class JdbcStorageHandler extends DefaultStorageHandler implements HiveSto
                 jobProperties.put(key, value);
             }
         }
+
     }
 
     @Override
@@ -128,10 +140,57 @@ public class JdbcStorageHandler extends DefaultStorageHandler implements HiveSto
     /**
      * @see DBConfiguration#INPUT_CONDITIONS_PROPERTY
      */
+
     @Override
-    public DecomposedPredicate decomposePredicate(JobConf jobConf, Deserializer deserializer, ExprNodeDesc predicate) {
+    public DecomposedPredicate decomposePredicate(JobConf jobConf, 
+        Deserializer deserializer, ExprNodeDesc predicate) {
         // TODO Auto-generated method stub
-        return null;
+       /* LOG.info("Prediactes in ----->  "+ predicate.getExprString());
+        DecomposedPredicate dp = new DecomposedPredicate() ;
+        dp.pushedPredicate =(ExprNodeGenericFuncDesc) predicate;
+        return dp;*/
+        IndexPredicateAnalyzer analyzer = new IndexPredicateAnalyzer();
+        analyzer.addComparisonOp("org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual");
+        analyzer.addComparisonOp("org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqualOrGreaterThan");
+        analyzer.addComparisonOp("org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqualOrLessThan");
+        analyzer.addComparisonOp("org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPLessThan");
+        analyzer.addComparisonOp("org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPGreaterThan");
+        analyzer.addComparisonOp("org.apache.hadoop.hive.ql.udf.generic.GenericUDFIn");
+        analyzer.addComparisonOp("org.apache.hadoop.hive.ql.udf.generic.GenericUDFBetween");
+        analyzer.addComparisonOp("org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNot");
+        analyzer.addComparisonOp("org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNotNull");
+        analyzer.addComparisonOp("org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNull");
+        analyzer.addComparisonOp("org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNotEqual");
+        analyzer.addComparisonOp("org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPAnd");
+
+
+        String keyColType = 
+            jobConf.get(org.apache.hadoop.hive.serde.serdeConstants.LIST_COLUMNS);
+
+        //LOG.info("COl names are : "+ keyColType);
+        StringTokenizer st = new StringTokenizer(keyColType,",");
+        while (st.hasMoreTokens()){
+            String columnName = (String) st.nextToken();
+            //System.out.println("Next token : " + columnName);
+            analyzer.allowColumnName(columnName);  
+            LOG.info(columnName);      
+        }
+
+        List<IndexSearchCondition> searchConditions = new ArrayList<IndexSearchCondition>();
+        ExprNodeDesc residualPredicate = analyzer.analyzePredicate(predicate, searchConditions);
+       
+         for(IndexSearchCondition e: searchConditions){
+            LOG.info("COnditions fetched are: " + e.toString());
+         }
+         
+        DecomposedPredicate decomposedPredicate = new DecomposedPredicate();
+        decomposedPredicate.pushedPredicate = (ExprNodeGenericFuncDesc)analyzer.translateSearchConditions(searchConditions);
+        decomposedPredicate.residualPredicate = (ExprNodeGenericFuncDesc)residualPredicate;
+        if(decomposedPredicate.pushedPredicate != null)
+            LOG.info("Predicates pushed: "+ decomposedPredicate.pushedPredicate.getExprString());
+        if(decomposedPredicate.residualPredicate != null)
+            LOG.info("Predicates not Pushed: "+ decomposedPredicate.residualPredicate.getExprString());
+        return decomposedPredicate;
     }
 
     private static class JDBCHook implements HiveMetaHook {

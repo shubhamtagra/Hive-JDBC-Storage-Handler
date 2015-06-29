@@ -10,7 +10,6 @@ import java.sql.SQLException;
 import java.util.Arrays;
 
 import org.apache.hadoop.io.Writable;
-import org.apache.hadoop.mapred.lib.db.DBWritable;
 
 public class DbRecordWritable implements Writable, DBWritable {
 

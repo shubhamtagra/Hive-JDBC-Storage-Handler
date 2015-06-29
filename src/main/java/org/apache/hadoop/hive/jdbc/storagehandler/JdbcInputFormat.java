@@ -8,7 +8,6 @@ import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.Reporter;
-import org.apache.hadoop.mapred.lib.db.DBInputFormat;
 
 public class JdbcInputFormat extends DBInputFormat<DbRecordWritable> {
 
@@ -17,10 +16,6 @@ public class JdbcInputFormat extends DBInputFormat<DbRecordWritable> {
     /**
      * @see org.apache.hadoop.util.ReflectionUtils#setConf(Object, Configuration)
      */
-    
-    public void setConf(Configuration conf) {
-        // delay for TableJobProperties is set to the jobConf
-    }
 
     /**
      * @see org.apache.hadoop.hive.ql.exec.FetchOperator#getRecordReader()
