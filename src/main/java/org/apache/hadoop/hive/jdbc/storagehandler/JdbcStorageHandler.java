@@ -133,6 +133,12 @@ public class JdbcStorageHandler extends DefaultStorageHandler implements HiveSto
     }*/
 
     @Override
+    public Class<? extends HiveOutputFormat> getOutputFormatClass() {
+        // NOTE that must return subclass of HiveOutputFormat
+        return JdbcOutputFormat.class;
+    }
+    
+    @Override
     public Class<? extends SerDe> getSerDeClass() {
         return JdbcSerDe.class;
     }
