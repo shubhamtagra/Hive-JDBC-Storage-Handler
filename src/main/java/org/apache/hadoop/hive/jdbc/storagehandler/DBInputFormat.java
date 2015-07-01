@@ -213,7 +213,10 @@ public class DBInputFormat<T  extends DBWritable>
      */
     public DBInputSplit(long start, long end, JobConf conf) {
       super((Path) null, 0, 0, new String[0]);
-      path = FileInputFormat.getInputPaths(conf)[0];
+      Path[] paths = FileInputFormat.getInputPaths(conf);
+      if (paths.length > 0) {
+          path = FileInputFormat.getInputPaths(conf)[0];
+      }
       this.start = start;
       this.end = end;
     }
