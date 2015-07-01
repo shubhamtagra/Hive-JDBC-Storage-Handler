@@ -194,7 +194,7 @@ public class DBInputFormat<T  extends DBWritable>
   /**
    * A InputSplit that spans a set of rows
    */
-  protected static class DBInputSplit extends FileSplit {
+  public static class DBInputSplit extends FileSplit {
 
     private long end = 0;
     private long start = 0;
