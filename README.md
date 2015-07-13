@@ -7,7 +7,7 @@ Optimizations such as [FilterPushDown](https://cwiki.apache.org/confluence/displ
 ##Building from Source##
 * Download the code from Github:
 ```
-  $ git clone https://github.com/divyanshu25/Hive-JDBC-storage-Handler.git
+  $ git clone https://github.com/qubole/Hive-JDBC-storage-Handler.git
   $ cd Hive-JDBC-storage-Handler
 ```
 
@@ -51,7 +51,6 @@ TBLPROPERTIES (
   "mapred.jdbc.username"="root",
   "mapred.jdbc.input.table.name"="JDBCTable",
   "mapred.jdbc.output.table.name"="JDBCTable",
-  "mapred.jdbc.input.conditions" = "id > 20000 and id< 70000",
   "mapred.jdbc.password"=""
 );
 
