@@ -157,7 +157,6 @@ public class JdbcInputFormat extends DBInputFormat<DbRecordWritable> {
             super.configure(job);
             this.jobConfSet = true;
         }
-
         return super.getRecordReader(
                 ((JdbcInputSplit) split).getDBInputSplit(), job, reporter);
     }

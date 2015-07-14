@@ -15,6 +15,8 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.io.Writable;
+import java.sql.*;
+
 
 /**
  * Serialize/Deserialize a tuple.
@@ -32,18 +34,53 @@ public class JdbcSerDe implements SerDe {
     public JdbcSerDe() {
     }
 
+    
+
     @Override
     public void initialize(Configuration sysConf, Properties tblProps)
             throws SerDeException {
         if (LOG.isDebugEnabled()) {
             LOG.debug("tblProps: " + tblProps);
         }
+        Connection dbConnection = null;
+        StringBuilder colNames = new StringBuilder();
+        StringBuilder colTypeNames = new StringBuilder();
+        try{
+
+            dbConnection = JdbcSerDeHelper.getConnection(tblProps);
+            String query = JdbcSerDeHelper.getSelectQuery(tblProps);
+            Statement st = dbConnection.createStatement();
+            ResultSet rs = st.executeQuery(query);
+            ResultSetMetaData rsmd = rs.getMetaData();
+            int columnsNumber = rsmd.getColumnCount();
+            int i =0;
+            for (i = 1; i < columnsNumber; i++ ) {
+              String colName = rsmd.getColumnName(i);
+              String colType = rsmd.getColumnTypeName(i);
+              colNames.append(colName+",");
+              colTypeNames.append(JdbcSerDeHelper.sqlToHiveColumnTypeNames(colType)+":");
+            }
+            colNames.append(rsmd.getColumnName(i));
+            colTypeNames.append(rsmd.getColumnTypeName(i));
+            LOG.info("Column Names >>" + colNames.toString());
+            LOG.info("Column Type Names >>" + colTypeNames.toString());
+
+            JdbcSerDeHelper.columnNames = colNames.toString();
+            JdbcSerDeHelper.columnTypeNames = colTypeNames.toString();
+
+            tblProps
+               .setProperty(Constants.LIST_COLUMNS, colNames.toString());
+            tblProps
+               .setProperty(Constants.LIST_COLUMN_TYPES, colTypeNames.toString());
+        }
+        catch (Exception ex) {
+            throw new RuntimeException(ex);
+        }
 
         String columnNameProperty = tblProps
                 .getProperty(Constants.LIST_COLUMNS);
         String columnTypeProperty = tblProps
-                .getProperty(Constants.LIST_COLUMN_TYPES);
-
+               .getProperty(Constants.LIST_COLUMN_TYPES);
         List<String> columnNames = Arrays.asList(columnNameProperty.split(","));
         String[] columnTypes = columnTypeProperty.split(":");
         assert (columnTypes.length == columnNames.size()) : "columnNames: "

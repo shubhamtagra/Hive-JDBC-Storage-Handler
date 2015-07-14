@@ -95,8 +95,15 @@ public class JdbcStorageHandler extends DefaultStorageHandler implements
             LOG.debug("jobProperties: " + jobProperties);
         }
 
+
+
         String tblName = tableDesc.getTableName();
         Properties tblProps = tableDesc.getProperties();
+        tblProps
+               .setProperty(Constants.LIST_COLUMN_TYPES, JdbcSerDeHelper.columnTypeNames);
+        tblProps
+               .setProperty(Constants.LIST_COLUMNS, JdbcSerDeHelper.columnNames);
+
         String columnNames = tblProps.getProperty(Constants.LIST_COLUMNS);
         // Setting both mapred and mapreduce properties
         jobProperties
