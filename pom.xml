@@ -14,6 +14,9 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
+    
+    
+
 
     <dependencies>
         <dependency>
@@ -45,47 +48,13 @@
                     <dependency>
                         <groupId>org.apache.hadoop</groupId>
                         <artifactId>hadoop-core</artifactId>
-                        <version>0.20.1-qds-0.2.0-SNAPSHOT</version>
+                        <version>1.2.1</version>
                         <scope>provided</scope>
                     </dependency>
                 </dependencies>
 
         </profile>
 
-         <profile>
-            <id>hadoop-2</id>
-            <properties>
-                <hadoop-20S.version>1.2.1</hadoop-20S.version>
-                <hadoop-23.version>2.6.0-qds-0.1.0-SNAPSHOT</hadoop-23.version>
-            </properties>
-            <dependencies>
-                <dependency>
-                    <groupId>org.apache.hadoop</groupId>
-                    <artifactId>hadoop-common</artifactId>
-                    <version>${hadoop-23.version}</version>
-                </dependency>
-                <dependency>
-                    <groupId>org.apache.hadoop</groupId>
-                    <artifactId>hadoop-aws</artifactId>
-                    <version>${hadoop-23.version}</version>
-                </dependency>
-                <dependency>
-                    <groupId>org.apache.hadoop</groupId>
-                    <artifactId>hadoop-hdfs</artifactId>
-                    <version>${hadoop-23.version}</version>
-                </dependency>
-                <dependency>
-                    <groupId>org.apache.hadoop</groupId>
-                    <artifactId>hadoop-mapreduce-client-jobclient</artifactId>
-                    <version>${hadoop-23.version}</version>
-                </dependency>
-                <dependency>
-                    <groupId>org.apache.hadoop</groupId>
-                    <artifactId>hadoop-mapreduce-client-core</artifactId>
-                    <version>${hadoop-23.version}</version>
-                </dependency>
-            </dependencies>
-        </profile>
     </profiles>
 
     <build>
@@ -146,19 +115,5 @@
 
         </plugins>
     </build>
-    <repositories>
-        <repository>
-            <id>qubole-http-release</id>
-            <name>Qubole HTTP Release Repository</name>
-            <url>http://maven-qubole.s3-website-us-east-1.amazonaws.com/maven/release</url>
-        </repository>
-        <repository>
-            <id>qubole-http-snapshot</id>
-            <name>Qubole HTTP Snapshot Repository</name>
-            <url>http://maven-qubole.s3-website-us-east-1.amazonaws.com/maven/snapshot</url>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-        </repository>
-    </repositories>
+
 </project>
