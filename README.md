@@ -17,7 +17,7 @@ Optimizations such as [FilterPushDown](https://cwiki.apache.org/confluence/displ
   $ mvn clean install -Phadoop-1
 ```
 
-* The JARs for the storage handler can be found in the ```target/``` folder. Use ```qubole-hive-JDBC-0.0.4-jar-with-dependencies.jar``` in the hive session (see below).
+* The JARs for the storage handler can be found in the ```target/``` folder. Use ```qubole-hive-JDBC-0.0.4.jar``` in the hive session (see below).
 
 ##Usage##
 * Add the JAR to the Hive session. ```<path-to-jar>``` is the path to the above mentioned JAR. For using this with Qubole hive, upload the JAR to an S3 bucket and provide its path.
