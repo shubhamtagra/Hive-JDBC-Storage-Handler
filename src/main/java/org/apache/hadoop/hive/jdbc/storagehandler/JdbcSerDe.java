@@ -31,7 +31,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.io.Writable;
-
+import java.sql.*;
 /**
  * Serialize/Deserialize a tuple.
  */
@@ -59,6 +59,21 @@ public class JdbcSerDe implements SerDe {
                 .getProperty(Constants.LIST_COLUMNS);
         String columnTypeProperty = tblProps
                 .getProperty(Constants.LIST_COLUMN_TYPES);
+        
+        if (columnNameProperty.length() == 0
+            && columnTypeProperty.length() == 0) {
+          JdbcSerDeHelper delegate = new JdbcSerDeHelper();
+          delegate.initialize(tblProps, sysConf);
+          tblProps.setProperty(Constants.LIST_COLUMNS,
+              delegate.getColumnNames());
+          tblProps.setProperty(Constants.LIST_COLUMN_TYPES,
+              delegate.getColumnTypeNames());
+
+          columnNameProperty = tblProps.getProperty(Constants.LIST_COLUMNS);
+          columnTypeProperty = tblProps
+              .getProperty(Constants.LIST_COLUMN_TYPES);
+          LOG.info(">> " + columnNameProperty + " " + columnTypeProperty);
+        }
 
         List<String> columnNames = Arrays.asList(columnNameProperty.split(","));
         String[] columnTypes = columnTypeProperty.split(":");
