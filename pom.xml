@@ -3,20 +3,21 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>qubole-hive-JDBC</groupId>
+    <groupId>com.qubole</groupId>
     <artifactId>qubole-hive-JDBC</artifactId>
-    <version>0.0.4</version>
+    <version>0.0.5-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>qubole-hive-JDBC-storage-handler</name>
     <url>http://maven.apache.org</url>
 
+    <scm>
+        <url>https://github.com/qubole/Hive-JDBC-Storage-Handler.git</url>
+    </scm>
+
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
-    
-    
-
 
     <dependencies>
         <dependency>
@@ -115,5 +116,15 @@
 
         </plugins>
     </build>
-    
+
+    <distributionManagement>
+        <snapshotRepository>
+            <id>ossrh</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+        </snapshotRepository>
+        <repository>
+            <id>ossrh</id>
+            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+        </repository>
+    </distributionManagement>    
 </project>
