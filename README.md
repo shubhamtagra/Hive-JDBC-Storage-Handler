@@ -1,6 +1,6 @@
 #Hive Storage Handler for JDBC#
 
-The **Hive Storage Handler For JDBC** by [Qubole](www.qubole.com) helps users read from and write to JDBC databases using Hive, and also enabling them to run SQL queries to analyze data that resides in JDBC tables.
+The **Hive Storage Handler For JDBC** by [Qubole](www.qubole.com), which is a fork of [HiveJdbcStorageHandler](https://github.com/myui/HiveJdbcStorageHandler), helps users read from and write to JDBC databases using Hive, and also enabling them to run SQL queries to analyze data that resides in JDBC tables.
 Optimizations such as [FilterPushDown](https://cwiki.apache.org/confluence/display/Hive/FilterPushdownDev) have also been added.
 
 
