@@ -53,7 +53,7 @@ public class JdbcInputFormat extends DBInputFormat<DbRecordWritable> {
     private boolean jobConfSet = false;
 
     // Wrapper Inner Class for DBInputSplit
-    protected static class JdbcInputSplit extends FileSplit {
+    public static class JdbcInputSplit extends FileSplit {
 
         private DBInputSplit dbSplit;
         private Path path;
@@ -65,7 +65,14 @@ public class JdbcInputFormat extends DBInputFormat<DbRecordWritable> {
         JdbcInputSplit(DBInputSplit dbSplit, JobConf job) {
             super((Path) null, 0, 0, new String[0]);
             this.dbSplit = dbSplit;
-            path = FileInputFormat.getInputPaths(job)[0];
+            if (FileInputFormat.getInputPaths(job).length > 0) {
+                path = FileInputFormat.getInputPaths(job)[0];
+            }
+        }
+
+        public JdbcInputSplit(long start, long end) {
+            super((Path) null, start, end, new String[0]);
+            this.dbSplit = new DBInputSplit(start, end);
         }
 
         public DBInputSplit getDBInputSplit() {
