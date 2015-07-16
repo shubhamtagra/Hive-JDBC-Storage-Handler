@@ -34,8 +34,10 @@ Optimizations such as [FilterPushDown](https://cwiki.apache.org/confluence/displ
   STORED BY 'org.apache.hadoop.hive.jdbc.storagehandler.JdbcStorageHandler'
 ```
   
-* For example, the following query would create a Hive table called 'HiveTable' that reads from a JDBC table called 'JDBCTable'.
-  
+##Table Creation##
+Table can be created in 2 ways:
+* First is, Column mappings can be explicitly given along with the table creation statement.
+
 ```
 DROP TABLE HiveTable;
 CREATE EXTERNAL TABLE HiveTable(
@@ -54,6 +56,22 @@ TBLPROPERTIES (
   "mapred.jdbc.password"=""
 );
 
+```
+
+* Second is, no table mappings are specified, SerDe class automatically generates those mappings.
+
+```
+CREATE EXTERNAL TABLE HiveTable
+row format serde 'org.apache.hadoop.hive.jdbc.storagehandler.JdbcSerDe'
+STORED BY 'org.apache.hadoop.hive.jdbc.storagehandler.JdbcStorageHandler'
+TBLPROPERTIES (
+  "mapred.jdbc.driver.class"="com.mysql.jdbc.Driver",
+  "mapred.jdbc.url"="jdbc:mysql://localhost:3306/rstore",
+  "mapred.jdbc.username"="root",
+  "mapred.jdbc.input.table.name"="JDBCTable",
+  "mapred.jdbc.output.table.name" = "JDBCTable",
+  "mapred.jdbc.password"=""
+);
 ```
 
 ##Sample Queries##
@@ -78,4 +96,7 @@ HIVE-JDBC Storage Handeler supports alomost all types of possible SQL queries. S
 ```
  set hive.optimize.ppd = false;
 ```
-
+##Contributions##
+* https://github.com/myui/HiveJdbcStorageHandler
+* https://github.com/hava_101
+* https://github.com/divyanshu25
