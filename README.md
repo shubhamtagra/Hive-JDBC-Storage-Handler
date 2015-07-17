@@ -77,6 +77,8 @@ TBLPROPERTIES (
 ##Sample Queries##
 
 HIVE-JDBC Storage Handeler supports alomost all types of possible SQL queries. Some examples of supported queries are:
+
+###Queries to Read from DB ###
 ```
 * select * from HiveTable;
 * Select count(*) from HiveTable;
@@ -84,9 +86,21 @@ HIVE-JDBC Storage Handeler supports alomost all types of possible SQL queries. S
 * select names from HiveTable;
 * select * from HiveTable where names like ‘D%’;
 * SELECT * FROM HiveTable ORDER BY id DESC;
+```
+###Group By Queries ###
+```
+* select id, sum(id_double) as sum_double from HiveTable group by id;
+
+```
+### Join Queries ###
+```
 * select HiveTable_1.*, HiveTable_2.* from HiveTable_1 a join HiveTable_2 b 
-  on (a.id = b.id) where a.id > 90000 and b.id > 97000 
-* Insert Into Table HiveTable_1 select * from HiveTable_2
+  on (a.id = b.id) where a.id > 90000 and b.id > 97000 ;
+```
+### Queries to insert data into DB ###
+```
+* Insert Into Table HiveTable_1 select * from HiveTable_2;
+*Insert Into Table HiveTable_1 select * from HiveTable_2 where id > 50000 and upper(names) = 'ANN';
 ```
 
 ## Support For FilterPushDown ##
