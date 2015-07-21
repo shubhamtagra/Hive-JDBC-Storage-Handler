@@ -1,4 +1,4 @@
-package org.apache.hadoop.hive.jdbc.storagehandler;
+package org.apache.hadoop.hive.wrapper;
 
 import java.io.DataInput;
 import java.io.DataOutput;

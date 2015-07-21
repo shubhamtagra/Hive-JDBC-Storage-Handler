@@ -1,4 +1,4 @@
-package org.apache.hadoop.hive.jdbc.storagehandler;
+package org.apache.hadoop.hive.wrapper;
 
 import java.io.IOException;
 
@@ -21,6 +21,7 @@ import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.FileSplit;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.conf.Configuration;
+
 public class InputFormatWrapper<K, V> implements
 		org.apache.hadoop.mapred.InputFormat {
 

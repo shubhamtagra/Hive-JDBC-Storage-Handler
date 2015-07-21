@@ -9,7 +9,7 @@ import org.apache.hadoop.mapred.Reporter;
 
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.LongWritable;
-
+import org.apache.hadoop.hive.wrapper.RecordReaderWrapper;
 import java.io.IOException;
 
 /**

@@ -41,7 +41,7 @@ import org.apache.hadoop.mapred.FileSplit;
 import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableUtils;
-import org.apache.hadoop.mapreduce.lib.db.*;
+import org.apache.hadoop.mapreduce.lib.db.DBInputFormat;
 import org.apache.hadoop.mapred.lib.db.DBConfiguration;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -51,6 +51,7 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.hadoop.mapreduce.TaskAttemptID;
+import org.apache.hadoop.hive.wrapper.InputFormatWrapper;
 
 public class JdbcInputFormat extends InputFormatWrapper {
     private static final Log LOG = LogFactory.getLog(JdbcInputFormat.class);
@@ -66,56 +67,15 @@ public class JdbcInputFormat extends InputFormatWrapper {
             InputSplit split, JobConf job, Reporter reporter)
             throws IOException {
         JdbcSerDeHelper.setFilters(job);
-        if (realInputFormat != null) {
-          ((org.apache.hadoop.mapreduce.lib.db.DBInputFormat)realInputFormat).setConf(job);
-          return new JdbcRecordReader(realInputFormat, split,
-              job, reporter);
-        } else {
-          return null;
-        }
+        ((org.apache.hadoop.mapreduce.lib.db.DBInputFormat)realInputFormat).setConf(job);
+        return super.getRecordReader(split, job, reporter);
     }
     @Override
     public InputSplit[] getSplits(JobConf job, int numSplits)
             throws IOException {
          JdbcSerDeHelper.setFilters(job);
-        if (this.realInputFormat != null) {
-            ((org.apache.hadoop.mapreduce.lib.db.DBInputFormat)realInputFormat).setConf(job);
-            try {
-                // create a MapContext to pass reporter to record reader (for
-                // counters)
-                TaskAttemptContext taskContext = ShimLoader.getHadoopShims()
-                        .newTaskAttemptContext(job, null);
-
-                List<org.apache.hadoop.mapreduce.InputSplit> splits = realInputFormat
-                        .getSplits(taskContext);
-
-                if (splits == null) {
-                    return null;
-                }
-
-                InputSplit[] resultSplits = new InputSplit[splits.size()];
-                int i = 0;
-                for (org.apache.hadoop.mapreduce.InputSplit split : splits) {
-                    if (split.getClass() == org.apache.hadoop.mapreduce.lib.input.FileSplit.class) {
-                        org.apache.hadoop.mapreduce.lib.input.FileSplit mapreduceFileSplit = ((org.apache.hadoop.mapreduce.lib.input.FileSplit) split);
-                        resultSplits[i++] = new FileSplit(
-                                mapreduceFileSplit.getPath(),
-                                mapreduceFileSplit.getStart(),
-                                mapreduceFileSplit.getLength(),
-                                mapreduceFileSplit.getLocations());
-                    } else {
-                        final Path[] paths = FileInputFormat.getInputPaths(job);
-                        resultSplits[i++] = new InputSplitWrapper(split, paths[0]);
-                    }
-                }
-
-                return resultSplits;
-
-            } catch (InterruptedException e) {
-                throw new IOException(e);
-            }
-        } else {
-            return null;
-        }
+         ((org.apache.hadoop.mapreduce.lib.db.DBInputFormat)realInputFormat).setConf(job);
+         return super.getSplits(job,numSplits);
+        
     }
 }
