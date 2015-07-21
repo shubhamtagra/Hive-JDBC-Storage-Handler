@@ -15,7 +15,6 @@
  * limitations under the License.
  */
 
-
 package org.apache.hadoop.hive.jdbc.storagehandler;
 
 import org.apache.commons.logging.Log;
@@ -54,28 +53,31 @@ import org.apache.hadoop.mapreduce.TaskAttemptID;
 import org.apache.hadoop.hive.wrapper.InputFormatWrapper;
 
 public class JdbcInputFormat extends InputFormatWrapper {
-    private static final Log LOG = LogFactory.getLog(JdbcInputFormat.class);
+	private static final Log LOG = LogFactory.getLog(JdbcInputFormat.class);
 
-    private boolean jobConfSet = false;
-    private DBInputFormat delegate ;
-    public JdbcInputFormat() {
-        super(new DBInputFormat());
-    }
+	private boolean jobConfSet = false;
+	private DBInputFormat delegate;
 
-    @Override
-    public RecordReader getRecordReader(
-            InputSplit split, JobConf job, Reporter reporter)
-            throws IOException {
-        JdbcSerDeHelper.setFilters(job);
-        ((org.apache.hadoop.mapreduce.lib.db.DBInputFormat)realInputFormat).setConf(job);
-        return super.getRecordReader(split, job, reporter);
-    }
-    @Override
-    public InputSplit[] getSplits(JobConf job, int numSplits)
-            throws IOException {
-         JdbcSerDeHelper.setFilters(job);
-         ((org.apache.hadoop.mapreduce.lib.db.DBInputFormat)realInputFormat).setConf(job);
-         return super.getSplits(job,numSplits);
-        
-    }
+	public JdbcInputFormat() {
+		super(new DBInputFormat());
+	}
+
+	@Override
+	public RecordReader getRecordReader(InputSplit split, JobConf job,
+			Reporter reporter) throws IOException {
+		JdbcSerDeHelper.setFilters(job);
+		((org.apache.hadoop.mapreduce.lib.db.DBInputFormat) realInputFormat)
+				.setConf(job);
+		return super.getRecordReader(split, job, reporter);
+	}
+
+	@Override
+	public InputSplit[] getSplits(JobConf job, int numSplits)
+			throws IOException {
+		JdbcSerDeHelper.setFilters(job);
+		((org.apache.hadoop.mapreduce.lib.db.DBInputFormat) realInputFormat)
+				.setConf(job);
+		return super.getSplits(job, numSplits);
+
+	}
 }

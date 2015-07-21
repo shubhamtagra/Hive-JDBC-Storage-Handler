@@ -1,3 +1,18 @@
+/*
+ * Copyright 2013-2015 Qubole
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.apache.hadoop.hive.wrapper;
 
 import java.io.IOException;
@@ -40,7 +55,7 @@ public class InputFormatWrapper<K, V> implements
 
 	@Override
 	public RecordReader<K, V> getRecordReader(InputSplit split, JobConf job,
-			Reporter reporter) throws IOException {		 
+			Reporter reporter) throws IOException {
 		if (this.realInputFormat != null) {
 			return new RecordReaderWrapper<K, V>(realInputFormat, split, job,
 					reporter);
@@ -78,7 +93,8 @@ public class InputFormatWrapper<K, V> implements
 								mapreduceFileSplit.getLocations());
 					} else {
 						final Path[] paths = FileInputFormat.getInputPaths(job);
-						resultSplits[i++] = new InputSplitWrapper(split, paths[0]);
+						resultSplits[i++] = new InputSplitWrapper(split,
+								paths[0]);
 					}
 				}
 
@@ -92,4 +108,3 @@ public class InputFormatWrapper<K, V> implements
 		}
 	}
 }
-

@@ -32,138 +32,139 @@ import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.io.Writable;
 import java.sql.*;
+
 /**
  * Serialize/Deserialize a tuple.
  */
 public class JdbcSerDe implements SerDe {
-    private static final Log LOG = LogFactory.getLog(JdbcSerDe.class);
+	private static final Log LOG = LogFactory.getLog(JdbcSerDe.class);
 
-    private DbRecordWritable cachedWritable;
+	private DbRecordWritable cachedWritable;
 
-    private int fieldCount;
+	private int fieldCount;
 
-    private StructObjectInspector objectInspector;
-    private List<Object> deserializeCache;
+	private StructObjectInspector objectInspector;
+	private List<Object> deserializeCache;
 
-    public JdbcSerDe() {
-    }
+	public JdbcSerDe() {
+	}
 
-    @Override
-    public void initialize(Configuration sysConf, Properties tblProps)
-            throws SerDeException {
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("tblProps: " + tblProps);
-        }
+	@Override
+	public void initialize(Configuration sysConf, Properties tblProps)
+			throws SerDeException {
+		if (LOG.isDebugEnabled()) {
+			LOG.debug("tblProps: " + tblProps);
+		}
 
-        String columnNameProperty = tblProps
-                .getProperty(Constants.LIST_COLUMNS);
-        String columnTypeProperty = tblProps
-                .getProperty(Constants.LIST_COLUMN_TYPES);
-        
-        if (columnNameProperty.length() == 0
-            && columnTypeProperty.length() == 0) {
-          JdbcSerDeHelper delegate = new JdbcSerDeHelper();
-          delegate.initialize(tblProps, sysConf);
-          tblProps.setProperty(Constants.LIST_COLUMNS,
-              delegate.getColumnNames());
-          tblProps.setProperty(Constants.LIST_COLUMN_TYPES,
-              delegate.getColumnTypeNames());
+		String columnNameProperty = tblProps
+				.getProperty(Constants.LIST_COLUMNS);
+		String columnTypeProperty = tblProps
+				.getProperty(Constants.LIST_COLUMN_TYPES);
 
-          columnNameProperty = tblProps.getProperty(Constants.LIST_COLUMNS);
-          columnTypeProperty = tblProps
-              .getProperty(Constants.LIST_COLUMN_TYPES);
-          LOG.info(">> " + columnNameProperty + " " + columnTypeProperty);
-        }
+		if (columnNameProperty.length() == 0
+				&& columnTypeProperty.length() == 0) {
+			JdbcSerDeHelper delegate = new JdbcSerDeHelper();
+			delegate.initialize(tblProps, sysConf);
+			tblProps.setProperty(Constants.LIST_COLUMNS,
+					delegate.getColumnNames());
+			tblProps.setProperty(Constants.LIST_COLUMN_TYPES,
+					delegate.getColumnTypeNames());
 
-        List<String> columnNames = Arrays.asList(columnNameProperty.split(","));
-        String[] columnTypes = columnTypeProperty.split(":");
-        assert (columnTypes.length == columnNames.size()) : "columnNames: "
-                + columnNames + ", columnTypes: "
-                + Arrays.toString(columnTypes);
+			columnNameProperty = tblProps.getProperty(Constants.LIST_COLUMNS);
+			columnTypeProperty = tblProps
+					.getProperty(Constants.LIST_COLUMN_TYPES);
+			LOG.info(">> " + columnNameProperty + " " + columnTypeProperty);
+		}
 
-        int[] types = HiveJdbcBridgeUtils.hiveTypesToSqlTypes(columnTypes);
-        this.cachedWritable = new DbRecordWritable(types);
-        this.fieldCount = types.length;
+		List<String> columnNames = Arrays.asList(columnNameProperty.split(","));
+		String[] columnTypes = columnTypeProperty.split(":");
+		assert (columnTypes.length == columnNames.size()) : "columnNames: "
+				+ columnNames + ", columnTypes: "
+				+ Arrays.toString(columnTypes);
 
-        final List<ObjectInspector> fieldOIs = new ArrayList<ObjectInspector>(
-                columnTypes.length);
-        for (int i = 0; i < types.length; i++) {
-            ObjectInspector oi = HiveJdbcBridgeUtils.getObjectInspector(
-                    types[i], columnTypes[i]);
-            fieldOIs.add(oi);
-        }
-        this.objectInspector = ObjectInspectorFactory
-                .getStandardStructObjectInspector(columnNames, fieldOIs);
-        this.deserializeCache = new ArrayList<Object>(columnTypes.length);
-    }
+		int[] types = HiveJdbcBridgeUtils.hiveTypesToSqlTypes(columnTypes);
+		this.cachedWritable = new DbRecordWritable(types);
+		this.fieldCount = types.length;
 
-    @Override
-    public ObjectInspector getObjectInspector() throws SerDeException {
-        return objectInspector;
-    }
+		final List<ObjectInspector> fieldOIs = new ArrayList<ObjectInspector>(
+				columnTypes.length);
+		for (int i = 0; i < types.length; i++) {
+			ObjectInspector oi = HiveJdbcBridgeUtils.getObjectInspector(
+					types[i], columnTypes[i]);
+			fieldOIs.add(oi);
+		}
+		this.objectInspector = ObjectInspectorFactory
+				.getStandardStructObjectInspector(columnNames, fieldOIs);
+		this.deserializeCache = new ArrayList<Object>(columnTypes.length);
+	}
 
-    @Override
-    public Class<? extends Writable> getSerializedClass() {
-        return DbRecordWritable.class;
-    }
+	@Override
+	public ObjectInspector getObjectInspector() throws SerDeException {
+		return objectInspector;
+	}
 
-    /*
-     * This method takes an object representing a row of data from Hive, and
-     * uses the ObjectInspector to get the data for each column and serialize.
-     */
-    @Override
-    public DbRecordWritable serialize(Object row, ObjectInspector inspector)
-            throws SerDeException {
-        final StructObjectInspector structInspector = (StructObjectInspector) inspector;
-        final List<? extends StructField> fields = structInspector
-                .getAllStructFieldRefs();
-        if (fields.size() != fieldCount) {
-            throw new SerDeException(String.format(
-                    "Required %d columns, received %d.", fieldCount,
-                    fields.size()));
-        }
+	@Override
+	public Class<? extends Writable> getSerializedClass() {
+		return DbRecordWritable.class;
+	}
 
-        cachedWritable.clear();
+	/*
+	 * This method takes an object representing a row of data from Hive, and
+	 * uses the ObjectInspector to get the data for each column and serialize.
+	 */
+	@Override
+	public DbRecordWritable serialize(Object row, ObjectInspector inspector)
+			throws SerDeException {
+		final StructObjectInspector structInspector = (StructObjectInspector) inspector;
+		final List<? extends StructField> fields = structInspector
+				.getAllStructFieldRefs();
+		if (fields.size() != fieldCount) {
+			throw new SerDeException(String.format(
+					"Required %d columns, received %d.", fieldCount,
+					fields.size()));
+		}
 
-        for (int i = 0; i < fieldCount; i++) {
-            StructField structField = fields.get(i);
-            if (structField != null) {
-                Object field = structInspector.getStructFieldData(row,
-                        structField);
-                ObjectInspector fieldOI = structField.getFieldObjectInspector();
-                Object javaObject = HiveJdbcBridgeUtils.deparseObject(field,
-                        fieldOI);
-                cachedWritable.set(i, javaObject);
-            }
-        }
+		cachedWritable.clear();
 
-        return cachedWritable;
-    }
+		for (int i = 0; i < fieldCount; i++) {
+			StructField structField = fields.get(i);
+			if (structField != null) {
+				Object field = structInspector.getStructFieldData(row,
+						structField);
+				ObjectInspector fieldOI = structField.getFieldObjectInspector();
+				Object javaObject = HiveJdbcBridgeUtils.deparseObject(field,
+						fieldOI);
+				cachedWritable.set(i, javaObject);
+			}
+		}
 
-    /**
-     * This method does the work of deserializing a record into Java objects
-     * that Hive can work with via the ObjectInspector interface.
-     */
-    @Override
-    public Object deserialize(Writable record) throws SerDeException {
-        if (!(record instanceof DbRecordWritable)) {
-            throw new SerDeException("Expected DbTupleWritable, received "
-                    + record.getClass().getName());
-        }
-        DbRecordWritable tuple = (DbRecordWritable) record;
-        deserializeCache.clear();
+		return cachedWritable;
+	}
 
-        for (int i = 0; i < fieldCount; i++) {
-            Object o = tuple.get(i);
-            deserializeCache.add(o);
-        }
+	/**
+	 * This method does the work of deserializing a record into Java objects
+	 * that Hive can work with via the ObjectInspector interface.
+	 */
+	@Override
+	public Object deserialize(Writable record) throws SerDeException {
+		if (!(record instanceof DbRecordWritable)) {
+			throw new SerDeException("Expected DbTupleWritable, received "
+					+ record.getClass().getName());
+		}
+		DbRecordWritable tuple = (DbRecordWritable) record;
+		deserializeCache.clear();
 
-        return deserializeCache;
-    }
+		for (int i = 0; i < fieldCount; i++) {
+			Object o = tuple.get(i);
+			deserializeCache.add(o);
+		}
 
-    @Override
-    public SerDeStats getSerDeStats() {
-        // TODO Auto-generated method stub
-        return null;
-    }
+		return deserializeCache;
+	}
+
+	@Override
+	public SerDeStats getSerDeStats() {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }
