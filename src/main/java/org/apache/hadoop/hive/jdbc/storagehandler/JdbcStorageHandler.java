@@ -184,7 +184,7 @@ public class JdbcStorageHandler extends DefaultStorageHandler implements
      */
     @SuppressWarnings("rawtypes")
     @Override
-    public Class<? extends InputFormat<? extends WritableComparable, ? extends Writable>> getInputFormatClass() {
+    public Class<? extends InputFormat> getInputFormatClass() {
         return JdbcInputFormat.class;
     }
 

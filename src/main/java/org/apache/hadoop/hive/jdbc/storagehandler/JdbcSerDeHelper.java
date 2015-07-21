@@ -34,6 +34,9 @@ import org.apache.hadoop.io.Writable;
 import java.sql.*;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapreduce.lib.db.DBConfiguration;
+import org.apache.hadoop.mapreduce.TaskAttemptContext;
+import org.apache.hadoop.mapreduce.TaskAttemptID;
+import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 
 public class JdbcSerDeHelper {
 
@@ -152,4 +155,20 @@ public class JdbcSerDeHelper {
     return columnTypeNames;
   }
 
+  public static void setFilters(JobConf jobConf) {
+        String filterConditions = jobConf
+                .get(TableScanDesc.FILTER_TEXT_CONF_STR);
+        String condition = jobConf
+                .get(DBConfiguration.INPUT_CONDITIONS_PROPERTY);
+        if (filterConditions != null && condition != null) {
+            condition = condition.concat(" AND ");
+            condition = condition.concat(filterConditions);
+        } else if (filterConditions != null) {
+            condition = filterConditions;
+        }
+        LOG.info("FilterPushDown Conditions: " + condition);
+        if (condition != null) {
+            jobConf.set(DBConfiguration.INPUT_CONDITIONS_PROPERTY, condition);
+        }
+    }    
 }
