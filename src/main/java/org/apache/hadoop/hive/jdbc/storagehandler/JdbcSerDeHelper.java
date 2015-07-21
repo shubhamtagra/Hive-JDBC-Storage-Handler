@@ -37,119 +37,119 @@ import org.apache.hadoop.mapreduce.lib.db.DBConfiguration;
 
 public class JdbcSerDeHelper {
 
-  private static final Log LOG = LogFactory.getLog(JdbcSerDe.class);
-  public static String columnNames;
-  public static String columnTypeNames;
-  private Connection dbConnection;
-  private String tableName;
+	private static final Log LOG = LogFactory.getLog(JdbcSerDe.class);
+	public static String columnNames;
+	public static String columnTypeNames;
+	private Connection dbConnection;
+	private String tableName;
 
-  public void initialize(Properties tblProps, Configuration sysConf) {
-    setProperties(tblProps, sysConf);
-    StringBuilder colNames = new StringBuilder();
-    StringBuilder colTypeNames = new StringBuilder();
-    DBConfiguration dbConf = new DBConfiguration(sysConf);
-    try {
+	public void initialize(Properties tblProps, Configuration sysConf) {
+		setProperties(tblProps, sysConf);
+		StringBuilder colNames = new StringBuilder();
+		StringBuilder colTypeNames = new StringBuilder();
+		DBConfiguration dbConf = new DBConfiguration(sysConf);
+		try {
 
-      dbConnection = dbConf.getConnection();
-      String query = getSelectQuery(tblProps);
-      Statement st = dbConnection.createStatement();
-      ResultSet rs = st.executeQuery(query);
-      ResultSetMetaData rsmd = rs.getMetaData();
-      int columnsNumber = rsmd.getColumnCount();
+			dbConnection = dbConf.getConnection();
+			String query = getSelectQuery(tblProps);
+			Statement st = dbConnection.createStatement();
+			ResultSet rs = st.executeQuery(query);
+			ResultSetMetaData rsmd = rs.getMetaData();
+			int columnsNumber = rsmd.getColumnCount();
 
-      int i = 0;
-      for (i = 1; i < columnsNumber; i++) {
-        String colName = rsmd.getColumnName(i);
-        String colType = rsmd.getColumnTypeName(i);
-        colNames.append(colName + ",");
-        colTypeNames.append(sqlToHiveColumnTypeNames(colType) + ":");
-      }
-      colNames.append(rsmd.getColumnName(i));
-      colTypeNames.append(rsmd.getColumnTypeName(i));
+			int i = 0;
+			for (i = 1; i < columnsNumber; i++) {
+				String colName = rsmd.getColumnName(i);
+				String colType = rsmd.getColumnTypeName(i);
+				colNames.append(colName + ",");
+				colTypeNames.append(sqlToHiveColumnTypeNames(colType) + ":");
+			}
+			colNames.append(rsmd.getColumnName(i));
+			colTypeNames.append(rsmd.getColumnTypeName(i));
 
-      columnNames = colNames.toString();
-      columnTypeNames = colTypeNames.toString();
+			columnNames = colNames.toString();
+			columnTypeNames = colTypeNames.toString();
 
-      rs.close();
-      st.close();
-      dbConnection.close();
+			rs.close();
+			st.close();
+			dbConnection.close();
 
-    } catch (Exception ex) {
-      throw new RuntimeException(ex);
-    }
-  }
+		} catch (Exception ex) {
+			throw new RuntimeException(ex);
+		}
+	}
 
-  public void setProperties(Properties tblProps, Configuration sysConf) {
+	public void setProperties(Properties tblProps, Configuration sysConf) {
 
-    for (String key : tblProps.stringPropertyNames()) {
-      // LOG.info(">> " + key + ">> " + tblProps.getProperty(key));
-      if (key.contains("jdbc.input.table.name")) {
-        String value = tblProps.getProperty(key);
-        tableName = value;
-      }
-      if (key.startsWith("mapred.jdbc.")) {
-        String value = tblProps.getProperty(key);
-        sysConf.set(key, value);
-        key = key.replaceAll("mapred", "mapreduce");
-        sysConf.set(key, value);
-      }
+		for (String key : tblProps.stringPropertyNames()) {
+			// LOG.info(">> " + key + ">> " + tblProps.getProperty(key));
+			if (key.contains("jdbc.input.table.name")) {
+				String value = tblProps.getProperty(key);
+				tableName = value;
+			}
+			if (key.startsWith("mapred.jdbc.")) {
+				String value = tblProps.getProperty(key);
+				sysConf.set(key, value);
+				key = key.replaceAll("mapred", "mapreduce");
+				sysConf.set(key, value);
+			}
 
-    }
-    for (String key : tblProps.stringPropertyNames()) {
-      if (key.startsWith("mapreduce.jdbc.")) {
-        String value = tblProps.getProperty(key);
-        sysConf.set(key, value);
-        key = key.replaceAll("mapreduce", "mapred");
-        sysConf.set(key, value);
-      }
-    }
-  }
+		}
+		for (String key : tblProps.stringPropertyNames()) {
+			if (key.startsWith("mapreduce.jdbc.")) {
+				String value = tblProps.getProperty(key);
+				sysConf.set(key, value);
+				key = key.replaceAll("mapreduce", "mapred");
+				sysConf.set(key, value);
+			}
+		}
+	}
 
-  public String getSelectQuery(Properties tblProps) {
-    StringBuilder query = new StringBuilder();
-    query.append("Select * from ");
-    query.append(tableName);
-    query.append(" LIMIT 1");
-    LOG.info(">> " + query.toString());
-    return query.toString();
-  }
+	public String getSelectQuery(Properties tblProps) {
+		StringBuilder query = new StringBuilder();
+		query.append("Select * from ");
+		query.append(tableName);
+		query.append(" LIMIT 1");
+		LOG.info(">> " + query.toString());
+		return query.toString();
+	}
 
-  public String sqlToHiveColumnTypeNames(String sqlType)
-      throws SerDeException {
-    final String lctype = sqlType.toLowerCase();
-    if ("varchar".equals(lctype)) {
-      return "STRING";
-    } else if ("float".equals(lctype)) {
-      return "FLOAT";
-    } else if ("double".equals(lctype)) {
-      return "DOUBLE";
-    } else if ("boolean".equals(lctype)) {
-      return "BOOLEAN";
-    } else if ("tinyint".equals(lctype)) {
-      return "TINYINT";
-    } else if ("smallint".equals(lctype)) {
-      return "SMALLINT";
-    } else if ("int".equals(lctype)) {
-      return "INT";
-    } else if ("bigint".equals(lctype)) {
-      return "BIGINT";
-    } else if ("timestamp".equals(lctype)) {
-      return "TIMESTAMP";
-    } else if ("binary".equals(lctype)) {
-      return "BINARY";
-    } else if (lctype.startsWith("array")) {
-      return "ARRAY<";
-    }
-    throw new SerDeException("Unrecognized column type: " + sqlType);
+	public String sqlToHiveColumnTypeNames(String sqlType)
+			throws SerDeException {
+		final String lctype = sqlType.toLowerCase();
+		if ("varchar".equals(lctype)) {
+			return "STRING";
+		} else if ("float".equals(lctype)) {
+			return "FLOAT";
+		} else if ("double".equals(lctype)) {
+			return "DOUBLE";
+		} else if ("boolean".equals(lctype)) {
+			return "BOOLEAN";
+		} else if ("tinyint".equals(lctype)) {
+			return "TINYINT";
+		} else if ("smallint".equals(lctype)) {
+			return "SMALLINT";
+		} else if ("int".equals(lctype)) {
+			return "INT";
+		} else if ("bigint".equals(lctype)) {
+			return "BIGINT";
+		} else if ("timestamp".equals(lctype)) {
+			return "TIMESTAMP";
+		} else if ("binary".equals(lctype)) {
+			return "BINARY";
+		} else if (lctype.startsWith("array")) {
+			return "ARRAY<";
+		}
+		throw new SerDeException("Unrecognized column type: " + sqlType);
 
-  }
+	}
 
-  public String getColumnNames() {
-    return columnNames;
-  }
+	public String getColumnNames() {
+		return columnNames;
+	}
 
-  public String getColumnTypeNames() {
-    return columnTypeNames;
-  }
+	public String getColumnTypeNames() {
+		return columnTypeNames;
+	}
 
 }

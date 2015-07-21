@@ -15,15 +15,14 @@
  * limitations under the License.
  */
 
-
 package org.apache.hadoop.hive.jdbc.storagehandler;
 
 public final class Constants {
 
-    public static final String LIST_COLUMNS = "columns";
-    public static final String LIST_COLUMN_TYPES = "columns.types";
+	public static final String LIST_COLUMNS = "columns";
+	public static final String LIST_COLUMN_TYPES = "columns.types";
 
-    private Constants() {
-    }
+	private Constants() {
+	}
 
 }
