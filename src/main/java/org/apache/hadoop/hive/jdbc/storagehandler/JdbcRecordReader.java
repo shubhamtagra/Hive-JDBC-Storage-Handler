@@ -14,13 +14,13 @@ import java.io.IOException;
  * Created by psrinivas on 09/06/14.
  */
 public class JdbcRecordReader extends
-		RecordReaderWrapper<LongWritable, BytesWritable> {
+        RecordReaderWrapper<LongWritable, BytesWritable> {
 
-	public JdbcRecordReader(
-			InputFormat<LongWritable, BytesWritable> newInputFormat,
-			InputSplit oldSplit, JobConf oldJobConf, Reporter reporter)
-			throws IOException {
-		super(newInputFormat, oldSplit, oldJobConf, reporter);
-	}
+    public JdbcRecordReader(
+            InputFormat<LongWritable, BytesWritable> newInputFormat,
+            InputSplit oldSplit, JobConf oldJobConf, Reporter reporter)
+            throws IOException {
+        super(newInputFormat, oldSplit, oldJobConf, reporter);
+    }
 
 }
