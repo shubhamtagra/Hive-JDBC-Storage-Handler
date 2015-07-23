@@ -59,7 +59,7 @@ public class JdbcInputFormat extends InputFormatWrapper {
     private DBInputFormat delegate;
 
     public JdbcInputFormat() {
-        super(new DBInputFormat());
+        super(new JdbcDBInputFormat());
     }
 
     @Override
