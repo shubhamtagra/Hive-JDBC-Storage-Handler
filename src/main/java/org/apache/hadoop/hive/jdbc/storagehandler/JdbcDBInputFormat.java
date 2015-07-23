@@ -57,6 +57,7 @@ import org.apache.hadoop.mapreduce.lib.db.DBConfiguration;
 
 public class JdbcDBInputFormat<T extends DBWritable> 
    extends DBInputFormat {
+    private static final Log LOG = LogFactory.getLog(JdbcDBInputFormat.class);
     private String conditions;
 
     private String tableName;
@@ -91,6 +92,7 @@ public class JdbcDBInputFormat<T extends DBWritable>
         setConfLocal();
         Class<T> inputClass = (Class<T>) (dbConf.getInputClass());
         try{
+            LOG.info("DB Type >> " + super.getDBProductName());
             if((super.getDBProductName()).startsWith("Microsoft SQL Server") ){
                 
                 return new MicrosoftDBRecordReader<T>((DBInputFormat.DBInputSplit)split, inputClass,
