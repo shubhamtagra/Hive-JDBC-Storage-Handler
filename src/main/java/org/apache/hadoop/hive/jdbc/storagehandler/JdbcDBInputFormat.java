@@ -93,7 +93,7 @@ public class JdbcDBInputFormat<T extends DBWritable>
         Class<T> inputClass = (Class<T>) (dbConf.getInputClass());
         try{
             LOG.info("DB Type >> " + super.getDBProductName());
-            if((super.getDBProductName()).startsWith("Microsoft SQL Server") ){
+            if((super.getDBProductName()).startsWith("MICROSOFT SQL SERVER") ){
                 
                 return new MicrosoftDBRecordReader<T>((DBInputFormat.DBInputSplit)split, inputClass,
                 dbConf.getConf(), connection, super.getDBConf(), conditions, fieldNames,
