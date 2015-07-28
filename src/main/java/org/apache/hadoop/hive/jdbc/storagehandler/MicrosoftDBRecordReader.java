@@ -109,7 +109,7 @@ public class MicrosoftDBRecordReader<T extends DBWritable> extends DBRecordReade
     try {
       query.append(" OFFSET ").append(split.getStart());
       query.append(" FETCH NEXT ").append(split.getLength()).append(" ROWS ONLY ");
-    } catch (IOException ex) {
+    } catch (Exception ex) {
       // Ignore, will not throw.
     }   
     return query.toString();
