@@ -101,26 +101,22 @@ public class RecordReaderWrapper<K, V> implements RecordReader<K, V> {
         if(flag){
             
             if(((JdbcDBInputSplit)(((InputSplitWrapper)oldSplit).realSplit)).isEnd()){
-                LOG.info("Debug3_1");
                 ((JdbcDBInputSplit)(((InputSplitWrapper)oldSplit).realSplit)).setStart(splitLen);
                 ((JdbcDBInputSplit)(((InputSplitWrapper)oldSplit).realSplit)).setEnd(count);
 
             }
             else{
-                LOG.info("Debug3_2");
                 ((JdbcDBInputSplit)(((InputSplitWrapper)oldSplit).realSplit)).setStart(splitLen);
                 ((JdbcDBInputSplit)(((InputSplitWrapper)oldSplit).realSplit)).setEnd(splitLen);
             }
         }
 
         if (oldSplit.getClass() == FileSplit.class) {
-            LOG.info("Debug4");
             split = new org.apache.hadoop.mapreduce.lib.input.FileSplit(
                     ((FileSplit) oldSplit).getPath(),
                     ((FileSplit) oldSplit).getStart(),
                     ((FileSplit) oldSplit).getLength(), oldSplit.getLocations());
         } else {
-            LOG.info("Debug5");
             split = ((InputSplitWrapper) oldSplit).realSplit;
         }
         if (taskAttemptID == null) {
@@ -203,15 +199,6 @@ public class RecordReaderWrapper<K, V> implements RecordReader<K, V> {
                                     + "objects. current reader class : "
                                     + realReader.getClass());
                 }
-
-                /*
-                 * if (value != valueObj) { throw new IOException(
-                 * "InputFormatWrapper - value is different " +
-                 * "and no value copier provided. " + "current reader class : "
-                 * + realReader.getClass());
-                 * 
-                 * }
-                 */
                 return true;
             }
         } catch (InterruptedException e) {

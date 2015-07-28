@@ -72,25 +72,17 @@ public class InputFormatWrapper<K, V> implements
         List<org.apache.hadoop.mapreduce.InputSplit> splits = null; 
         if (this.realInputFormat != null) {
             try {
-                
                 TaskAttemptContext taskContext = ShimLoader.getHadoopShims()
                         .newTaskAttemptContext(job, null);
-
                 if( ((job.get(Constants.VPC_SPLIT_MAPPERS)).toUpperCase()).equals("TRUE") ){
-                    
-                    int chunks = job.getInt("mapred.map.tasks", 1);
-                    // realInputFormat.getSplits(taskContext);
-                   splits = 
-                          new ArrayList<org.apache.hadoop.mapreduce.InputSplit>();
-
+                    int chunks = job.getInt("mapred.map.tasks", 1)
+                    splits = new ArrayList<org.apache.hadoop.mapreduce.InputSplit>();
                     for (int i = 0; i < chunks; i++) {
                         DBInputSplit split;
                         if ((i + 1) == chunks){
-                            LOG.info("Debug10_1");
                             split = new JdbcDBInputSplit(i, i + 1, true);
                         }
                         else{
-                            LOG.info("Debug10_2");
                             split = new JdbcDBInputSplit(i, i + 1 , false);
                         }
                         splits.add(split);
@@ -99,8 +91,6 @@ public class InputFormatWrapper<K, V> implements
                 else{
                     splits = realInputFormat.getSplits(taskContext);
                 }               
-   
-
                 if (splits == null) {
                     return null;
                 }
@@ -109,7 +99,6 @@ public class InputFormatWrapper<K, V> implements
                 int i = 0;
                 for (org.apache.hadoop.mapreduce.InputSplit split : splits) {
                     if (split.getClass() == org.apache.hadoop.mapreduce.lib.input.FileSplit.class) {
-                        LOG.info("Debug1");
                         org.apache.hadoop.mapreduce.lib.input.FileSplit mapreduceFileSplit = 
                            ((org.apache.hadoop.mapreduce.lib.input.FileSplit) split);
                         resultSplits[i++] = new FileSplit(
@@ -118,7 +107,6 @@ public class InputFormatWrapper<K, V> implements
                                 mapreduceFileSplit.getLength(),
                                 mapreduceFileSplit.getLocations());
                     } else {
-                        LOG.info("Debug2");
                         final Path[] paths = FileInputFormat.getInputPaths(job);
                         resultSplits[i++] = new InputSplitWrapper(split,
                                 paths[0]);

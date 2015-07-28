@@ -58,25 +58,25 @@ public class JdbcDBInputSplit extends org.apache.hadoop.mapreduce.lib.db.DBInput
 
     @Override
     public long getLength() throws IOException {
-    	LOG.info("Debug6l " + (this.end - this.start));
+    	
     	return this.end - this.start;
     }
 
     @Override
     public long getStart(){
-    	LOG.info("Debug6s " + this.start);
+    	
     	return this.start;
     }
 
     public void setStart(long chunkSize){
-    	LOG.info("Debug7s " + chunkSize);
+    	
     	this.start *=  chunkSize;
     }  
 
     public void setEnd(long chunkSize){
     	if(this.flag){
     		this.end = chunkSize;
-    		LOG.info("The end is " + this.end);
+    		
     	}
     	else{
     		this.end *= chunkSize;
@@ -87,7 +87,7 @@ public class JdbcDBInputSplit extends org.apache.hadoop.mapreduce.lib.db.DBInput
       this.start = input.readLong();
       this.end = input.readLong();
       this.flag = input.readBoolean();
-      LOG.info("read fields are >>" + this.start + " "  + this.end + " " + this.flag  );
+     
     }
 
     /** {@inheritDoc} */
@@ -96,6 +96,6 @@ public class JdbcDBInputSplit extends org.apache.hadoop.mapreduce.lib.db.DBInput
       output.writeLong(this.start);
       output.writeLong(this.end);
       output.writeBoolean(this.flag);
-      LOG.info("written fields are >>" + this.start + " "  + this.end + " " + this.flag  );
+      
     }
 }
