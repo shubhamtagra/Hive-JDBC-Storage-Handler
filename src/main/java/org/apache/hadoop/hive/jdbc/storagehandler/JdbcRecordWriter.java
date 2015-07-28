@@ -27,40 +27,40 @@ import org.apache.hadoop.mapreduce.lib.db.DBOutputFormat.DBRecordWriter;
 import org.apache.hadoop.util.StringUtils;
 
 public class JdbcRecordWriter implements RecordWriter {
-    private static final Log LOG = LogFactory.getLog(JdbcRecordWriter.class);
+	private static final Log LOG = LogFactory.getLog(JdbcRecordWriter.class);
 
-    @SuppressWarnings("rawtypes")
-    private final DBRecordWriter delegate;
+	@SuppressWarnings("rawtypes")
+	private final DBRecordWriter delegate;
 
-    @SuppressWarnings("rawtypes")
-    public JdbcRecordWriter(DBRecordWriter writer) {
-        this.delegate = writer;
-    }
+	@SuppressWarnings("rawtypes")
+	public JdbcRecordWriter(DBRecordWriter writer) {
+		this.delegate = writer;
+	}
 
-    @SuppressWarnings("unchecked")
-    @Override
-    public void write(Writable w) throws IOException {
-        delegate.write((DbRecordWritable) w, null);
-    }
+	@SuppressWarnings("unchecked")
+	@Override
+	public void write(Writable w) throws IOException {
+		delegate.write((DbRecordWritable) w, null);
+	}
 
-    @Override
-    public void close(boolean abort) throws IOException {
-        if (abort) {
-            Connection conn = delegate.getConnection();
-            try {
-                conn.rollback();
-            } catch (SQLException ex) {
-                LOG.warn(StringUtils.stringifyException(ex));
-            } finally {
-                try {
-                    conn.close();
-                } catch (SQLException ex) {
-                    throw new IOException(ex.getMessage());
-                }
-            }
-        } else {
-            delegate.close(null);
-        }
-    }
+	@Override
+	public void close(boolean abort) throws IOException {
+		if (abort) {
+			Connection conn = delegate.getConnection();
+			try {
+				conn.rollback();
+			} catch (SQLException ex) {
+				LOG.warn(StringUtils.stringifyException(ex));
+			} finally {
+				try {
+					conn.close();
+				} catch (SQLException ex) {
+					throw new IOException(ex.getMessage());
+				}
+			}
+		} else {
+			delegate.close(null);
+		}
+	}
 
 }
