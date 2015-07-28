@@ -113,5 +113,6 @@ HIVE-JDBC Storage Handeler supports alomost all types of possible SQL queries. S
 ```
 ##Contributions##
 * https://github.com/myui/HiveJdbcStorageHandler
-* https://github.com/hava_101
+* https://github.com/hava101
+* https://github.com/stagraqubole
 * https://github.com/divyanshu25
