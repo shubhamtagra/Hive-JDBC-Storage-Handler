@@ -75,7 +75,7 @@ public class InputFormatWrapper<K, V> implements
                 TaskAttemptContext taskContext = ShimLoader.getHadoopShims()
                         .newTaskAttemptContext(job, null);
                 if( ((job.get(Constants.VPC_SPLIT_MAPPERS)).toUpperCase()).equals("TRUE") ){
-                    int chunks = job.getInt("mapred.map.tasks", 1)
+                    int chunks = job.getInt("mapred.map.tasks", 1);
                     splits = new ArrayList<org.apache.hadoop.mapreduce.InputSplit>();
                     for (int i = 0; i < chunks; i++) {
                         DBInputSplit split;
