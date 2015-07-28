@@ -66,6 +66,34 @@ public class InputFormatWrapper<K, V> implements
         }
     }
 
+    public List<org.apache.hadoop.mapreduce.InputSplit> getSplitsForVPC(JobConf job, 
+        List<org.apache.hadoop.mapreduce.InputSplit> splits, TaskAttemptContext taskContext){
+     
+         try{
+            if( ((job.get(Constants.VPC_SPLIT_MAPPERS)).toUpperCase()).equals("TRUE") ){
+                int chunks = job.getInt("mapred.map.tasks", 1);
+                splits = new ArrayList<org.apache.hadoop.mapreduce.InputSplit>();
+                for (int i = 0; i < chunks; i++) {
+                    DBInputSplit split;
+                    if ((i + 1) == chunks){
+                        split = new JdbcDBInputSplit(i, i + 1, true);
+                    }
+                    else{
+                        split = new JdbcDBInputSplit(i, i + 1 , false);
+                    }
+                    splits.add(split);
+                }
+            }
+            else{
+                    splits = realInputFormat.getSplits(taskContext);
+            }
+            return splits;
+        } catch (Exception e) {
+            
+        }
+        return null;
+    }
+
     @Override
     public InputSplit[] getSplits(JobConf job, int numSplits)
             throws IOException {
@@ -74,23 +102,8 @@ public class InputFormatWrapper<K, V> implements
             try {
                 TaskAttemptContext taskContext = ShimLoader.getHadoopShims()
                         .newTaskAttemptContext(job, null);
-                if( ((job.get(Constants.VPC_SPLIT_MAPPERS)).toUpperCase()).equals("TRUE") ){
-                    int chunks = job.getInt("mapred.map.tasks", 1);
-                    splits = new ArrayList<org.apache.hadoop.mapreduce.InputSplit>();
-                    for (int i = 0; i < chunks; i++) {
-                        DBInputSplit split;
-                        if ((i + 1) == chunks){
-                            split = new JdbcDBInputSplit(i, i + 1, true);
-                        }
-                        else{
-                            split = new JdbcDBInputSplit(i, i + 1 , false);
-                        }
-                        splits.add(split);
-                    }
-                }
-                else{
-                    splits = realInputFormat.getSplits(taskContext);
-                }               
+
+                splits = getSplitsForVPC(job,splits,taskContext);
                 if (splits == null) {
                     return null;
                 }

@@ -94,12 +94,10 @@ public class RecordReaderWrapper<K, V> implements RecordReader<K, V> {
                 // ignore Exception
             }
         }
-
         //=====================================================================//
         org.apache.hadoop.mapreduce.InputSplit split;
         
         if(flag){
-            
             if(((JdbcDBInputSplit)(((InputSplitWrapper)oldSplit).realSplit)).isEnd()){
                 ((JdbcDBInputSplit)(((InputSplitWrapper)oldSplit).realSplit)).setStart(splitLen);
                 ((JdbcDBInputSplit)(((InputSplitWrapper)oldSplit).realSplit)).setEnd(count);
