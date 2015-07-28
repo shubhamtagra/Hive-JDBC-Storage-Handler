@@ -16,7 +16,7 @@
 package org.apache.hadoop.hive.wrapper;
 
 import java.io.IOException;
-
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.hadoop.mapreduce.InputFormat;
@@ -36,6 +36,9 @@ import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.FileSplit;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.mapreduce.lib.db.DBInputFormat.*;
+import org.apache.hadoop.hive.jdbc.storagehandler.JdbcDBInputSplit;
+import org.apache.hadoop.hive.jdbc.storagehandler.Constants;
 
 public class InputFormatWrapper<K, V> implements
         org.apache.hadoop.mapred.InputFormat {
@@ -66,15 +69,37 @@ public class InputFormatWrapper<K, V> implements
     @Override
     public InputSplit[] getSplits(JobConf job, int numSplits)
             throws IOException {
+        List<org.apache.hadoop.mapreduce.InputSplit> splits = null; 
         if (this.realInputFormat != null) {
             try {
-                // create a MapContext to pass reporter to record reader (for
-                // counters)
+                
                 TaskAttemptContext taskContext = ShimLoader.getHadoopShims()
                         .newTaskAttemptContext(job, null);
 
-                List<org.apache.hadoop.mapreduce.InputSplit> splits = realInputFormat
-                        .getSplits(taskContext);
+                if( ((job.get(Constants.VPC_SPLIT_MAPPERS)).toUpperCase()).equals("TRUE") ){
+                    
+                    int chunks = job.getInt("mapred.map.tasks", 1);
+                    // realInputFormat.getSplits(taskContext);
+                   splits = 
+                          new ArrayList<org.apache.hadoop.mapreduce.InputSplit>();
+
+                    for (int i = 0; i < chunks; i++) {
+                        DBInputSplit split;
+                        if ((i + 1) == chunks){
+                            LOG.info("Debug10_1");
+                            split = new JdbcDBInputSplit(i, i + 1, true);
+                        }
+                        else{
+                            LOG.info("Debug10_2");
+                            split = new JdbcDBInputSplit(i, i + 1 , false);
+                        }
+                        splits.add(split);
+                    }
+                }
+                else{
+                    splits = realInputFormat.getSplits(taskContext);
+                }               
+   
 
                 if (splits == null) {
                     return null;
@@ -84,13 +109,16 @@ public class InputFormatWrapper<K, V> implements
                 int i = 0;
                 for (org.apache.hadoop.mapreduce.InputSplit split : splits) {
                     if (split.getClass() == org.apache.hadoop.mapreduce.lib.input.FileSplit.class) {
-                        org.apache.hadoop.mapreduce.lib.input.FileSplit mapreduceFileSplit = ((org.apache.hadoop.mapreduce.lib.input.FileSplit) split);
+                        LOG.info("Debug1");
+                        org.apache.hadoop.mapreduce.lib.input.FileSplit mapreduceFileSplit = 
+                           ((org.apache.hadoop.mapreduce.lib.input.FileSplit) split);
                         resultSplits[i++] = new FileSplit(
                                 mapreduceFileSplit.getPath(),
                                 mapreduceFileSplit.getStart(),
                                 mapreduceFileSplit.getLength(),
                                 mapreduceFileSplit.getLocations());
                     } else {
+                        LOG.info("Debug2");
                         final Path[] paths = FileInputFormat.getInputPaths(job);
                         resultSplits[i++] = new InputSplitWrapper(split,
                                 paths[0]);
@@ -99,7 +127,7 @@ public class InputFormatWrapper<K, V> implements
 
                 return resultSplits;
 
-            } catch (InterruptedException e) {
+            } catch (Exception e) {
                 throw new IOException(e);
             }
         } else {
