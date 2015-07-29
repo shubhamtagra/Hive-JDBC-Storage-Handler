@@ -37,10 +37,6 @@ Optimizations such as [FilterPushDown](https://cwiki.apache.org/confluence/displ
 ##Table Creation##
 Table can be created in 2 ways:
 * First is, Column mappings can be explicitly given along with the table creation statement.
-```
-NOTE: "mapred.jdbc.hive.lazy.split"= "true" property enables 
-       split computation to be done by mappers internally.
-```
 
 ```
 DROP TABLE HiveTable;
@@ -78,6 +74,11 @@ TBLPROPERTIES (
   "mapred.jdbc.password"="",
   "mapred.jdbc.hive.lazy.split"= "false"
 );
+```
+
+```
+NOTE: "mapred.jdbc.hive.lazy.split"= "true" property enables 
+       split computation to be done by mappers internally.
 ```
 
 ##Sample Queries##
