@@ -58,18 +58,17 @@ public class RecordReaderWrapper<K, V> implements RecordReader<K, V> {
     private String tblname = null;
     private DBConfiguration delegate = null;
     private long taskIdMapper = 0;
-    private boolean flag = false;
+    private boolean lazySplitActive = false;
     private long count = 0;
     private int chunks = 0;
     public RecordReaderWrapper(InputFormat<K, V> newInputFormat,
             InputSplit oldSplit, JobConf oldJobConf, Reporter reporter)
             throws IOException {
-        
-        //======================================================================//
-          TaskAttemptID taskAttemptID = TaskAttemptID.forName(oldJobConf
+    
+        TaskAttemptID taskAttemptID = TaskAttemptID.forName(oldJobConf
                 .get("mapred.task.id"));
         if( ((oldJobConf.get(Constants.VPC_SPLIT_MAPPERS)).toUpperCase()).equals("TRUE") ){
-            flag = true;
+            lazySplitActive = true;
             ResultSet results = null;  
             Statement statement = null;
             delegate = new DBConfiguration(oldJobConf);
@@ -85,6 +84,8 @@ public class RecordReaderWrapper<K, V> implements RecordReader<K, V> {
                 chunks = oldJobConf.getInt("mapred.map.tasks", 1);
                 LOG.info("Total numer of records: " + count + ". Total number of mappers: " + chunks );
                 splitLen = count/chunks;
+                if((count%chunks) != 0)
+                    splitLen++;
                 LOG.info("Split Length is "+ splitLen);
                 results.close();
                 statement.close();
@@ -94,19 +95,12 @@ public class RecordReaderWrapper<K, V> implements RecordReader<K, V> {
                 // ignore Exception
             }
         }
-        //=====================================================================//
         org.apache.hadoop.mapreduce.InputSplit split;
         
-        if(flag){
-            if(((JdbcDBInputSplit)(((InputSplitWrapper)oldSplit).realSplit)).isEnd()){
-                ((JdbcDBInputSplit)(((InputSplitWrapper)oldSplit).realSplit)).setStart(splitLen);
-                ((JdbcDBInputSplit)(((InputSplitWrapper)oldSplit).realSplit)).setEnd(count);
-
-            }
-            else{
-                ((JdbcDBInputSplit)(((InputSplitWrapper)oldSplit).realSplit)).setStart(splitLen);
-                ((JdbcDBInputSplit)(((InputSplitWrapper)oldSplit).realSplit)).setEnd(splitLen);
-            }
+        if(lazySplitActive){
+            
+            ((JdbcDBInputSplit)(((InputSplitWrapper)oldSplit).realSplit)).setStart(splitLen);
+            ((JdbcDBInputSplit)(((InputSplitWrapper)oldSplit).realSplit)).setEnd(splitLen);
         }
 
         if (oldSplit.getClass() == FileSplit.class) {

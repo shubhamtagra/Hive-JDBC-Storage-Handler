@@ -75,12 +75,7 @@ public class InputFormatWrapper<K, V> implements
                 splits = new ArrayList<org.apache.hadoop.mapreduce.InputSplit>();
                 for (int i = 0; i < chunks; i++) {
                     DBInputSplit split;
-                    if ((i + 1) == chunks){
-                        split = new JdbcDBInputSplit(i, i + 1, true);
-                    }
-                    else{
-                        split = new JdbcDBInputSplit(i, i + 1 , false);
-                    }
+                    split = new JdbcDBInputSplit(i);
                     splits.add(split);
                 }
             }

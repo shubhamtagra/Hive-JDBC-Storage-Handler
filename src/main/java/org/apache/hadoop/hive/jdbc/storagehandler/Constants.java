@@ -21,7 +21,7 @@ public final class Constants {
 
     public static final String LIST_COLUMNS = "columns";
     public static final String LIST_COLUMN_TYPES = "columns.types";
-    public static final String VPC_SPLIT_MAPPERS = "mapred.jdbc.hive.vpc.split";
+    public static final String VPC_SPLIT_MAPPERS = "mapred.jdbc.hive.lazy.split";
     private Constants() {
     }
 

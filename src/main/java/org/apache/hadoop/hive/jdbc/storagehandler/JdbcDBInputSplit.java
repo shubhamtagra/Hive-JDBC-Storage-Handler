@@ -33,38 +33,31 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.io.Writable;
-import org.apache.hadoop.mapreduce.lib.db.DBInputFormat.*;
+import org.apache.hadoop.mapreduce.lib.db.DBInputFormat.DBInputSplit;
 import java.io.IOException;
 
 public class JdbcDBInputSplit extends org.apache.hadoop.mapreduce.lib.db.DBInputFormat.DBInputSplit {
     private static final Log LOG = LogFactory.getLog(JdbcDBInputSplit.class);
-	private long start = 0;
-	private long length = 0;
+	  private long start = 0;
+	  private long length = 0;
     private long end = 0;
-    private boolean flag = false;
     public JdbcDBInputSplit() {
      
     }
-    public JdbcDBInputSplit(long start, long end, boolean flag) {
-      super(start,end);
-      this.start = start;
-      this.end = end;
-      this.flag = flag;
+    public JdbcDBInputSplit(long index) {
+      super(index,index+1);
+      this.start = index;
+      this.end = index+1;
     }
-
-    public boolean isEnd(){
-    	return this.flag;
-    }
-
     @Override
     public long getLength() throws IOException {
-    	
+    	LOG.info("end index and length is: "+ this.end + " " + (this.end - this.start));
     	return this.end - this.start;
     }
 
     @Override
     public long getStart(){
-    	
+    	LOG.info("Start index is: "+ this.start);
     	return this.start;
     }
 
@@ -74,19 +67,13 @@ public class JdbcDBInputSplit extends org.apache.hadoop.mapreduce.lib.db.DBInput
     }  
 
     public void setEnd(long chunkSize){
-    	if(this.flag){
-    		this.end = chunkSize;
-    		
-    	}
-    	else{
     		this.end *= chunkSize;
-    	}
+    
     }
  
     public void readFields(DataInput input) throws IOException {
       this.start = input.readLong();
       this.end = input.readLong();
-      this.flag = input.readBoolean();
      
     }
 
@@ -95,7 +82,5 @@ public class JdbcDBInputSplit extends org.apache.hadoop.mapreduce.lib.db.DBInput
     public void write(DataOutput output) throws IOException {
       output.writeLong(this.start);
       output.writeLong(this.end);
-      output.writeBoolean(this.flag);
-      
     }
 }
