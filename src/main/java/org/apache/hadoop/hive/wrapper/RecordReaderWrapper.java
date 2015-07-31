@@ -26,6 +26,8 @@ import org.apache.hadoop.mapred.FileSplit;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapreduce.lib.db.DBInputFormat;
+import org.apache.hadoop.mapreduce.lib.db.DBConfiguration;
 
 import org.apache.hadoop.mapreduce.InputFormat;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
@@ -34,7 +36,10 @@ import org.apache.hadoop.hive.shims.ShimLoader;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
+import java.util.StringTokenizer;
+import java.sql.*;
+import org.apache.hadoop.hive.jdbc.storagehandler.Constants;
+import org.apache.hadoop.hive.jdbc.storagehandler.JdbcDBInputSplit;
 public class RecordReaderWrapper<K, V> implements RecordReader<K, V> {
 
     private static final Log LOG = LogFactory.getLog(RecordReaderWrapper.class);
@@ -49,14 +54,54 @@ public class RecordReaderWrapper<K, V> implements RecordReader<K, V> {
 
     private boolean firstRecord = false;
     private boolean eof = false;
-
+    private Connection conn = null;
+    private String tblname = null;
+    private DBConfiguration delegate = null;
+    private long taskIdMapper = 0;
+    private boolean lazySplitActive = false;
+    private long count = 0;
+    private int chunks = 0;
     public RecordReaderWrapper(InputFormat<K, V> newInputFormat,
             InputSplit oldSplit, JobConf oldJobConf, Reporter reporter)
             throws IOException {
+    
+        TaskAttemptID taskAttemptID = TaskAttemptID.forName(oldJobConf
+                .get("mapred.task.id"));
+        if( ((oldJobConf.get(Constants.VPC_SPLIT_MAPPERS)).toUpperCase()).equals("TRUE") ){
+            lazySplitActive = true;
+            ResultSet results = null;  
+            Statement statement = null;
+            delegate = new DBConfiguration(oldJobConf);
+            try{    
+                conn = delegate.getConnection();
+           
+                statement = conn.createStatement();
 
-        splitLen = oldSplit.getLength();
+                results = statement.executeQuery("Select Count(*) from " + oldJobConf.get("mapred.jdbc.input.table.name"));
+                results.next();
 
+                count = results.getLong(1);
+                chunks = oldJobConf.getInt("mapred.map.tasks", 1);
+                LOG.info("Total numer of records: " + count + ". Total number of mappers: " + chunks );
+                splitLen = count/chunks;
+                if((count%chunks) != 0)
+                    splitLen++;
+                LOG.info("Split Length is "+ splitLen);
+                results.close();
+                statement.close();
+                
+            }
+            catch(Exception e){
+                // ignore Exception
+            }
+        }
         org.apache.hadoop.mapreduce.InputSplit split;
+        
+        if(lazySplitActive){
+            
+            ((JdbcDBInputSplit)(((InputSplitWrapper)oldSplit).realSplit)).setStart(splitLen);
+            ((JdbcDBInputSplit)(((InputSplitWrapper)oldSplit).realSplit)).setEnd(splitLen);
+        }
 
         if (oldSplit.getClass() == FileSplit.class) {
             split = new org.apache.hadoop.mapreduce.lib.input.FileSplit(
@@ -66,12 +111,10 @@ public class RecordReaderWrapper<K, V> implements RecordReader<K, V> {
         } else {
             split = ((InputSplitWrapper) oldSplit).realSplit;
         }
-
-        TaskAttemptID taskAttemptID = TaskAttemptID.forName(oldJobConf
-                .get("mapred.task.id"));
         if (taskAttemptID == null) {
             taskAttemptID = new TaskAttemptID();
         }
+        LOG.info("Task attempt id is >> " + taskAttemptID.toString());
 
         // create a MapContext to pass reporter to record reader (for counters)
         TaskAttemptContext taskContext = ShimLoader.getHadoopShims()
@@ -148,15 +191,6 @@ public class RecordReaderWrapper<K, V> implements RecordReader<K, V> {
                                     + "objects. current reader class : "
                                     + realReader.getClass());
                 }
-
-                /*
-                 * if (value != valueObj) { throw new IOException(
-                 * "InputFormatWrapper - value is different " +
-                 * "and no value copier provided. " + "current reader class : "
-                 * + realReader.getClass());
-                 * 
-                 * }
-                 */
                 return true;
             }
         } catch (InterruptedException e) {

@@ -53,7 +53,8 @@ TBLPROPERTIES (
   "mapred.jdbc.username"="root",
   "mapred.jdbc.input.table.name"="JDBCTable",
   "mapred.jdbc.output.table.name"="JDBCTable",
-  "mapred.jdbc.password"=""
+  "mapred.jdbc.password"="",
+  "mapred.jdbc.hive.lazy.split"= "false"
 );
 
 ```
@@ -70,8 +71,14 @@ TBLPROPERTIES (
   "mapred.jdbc.username"="root",
   "mapred.jdbc.input.table.name"="JDBCTable",
   "mapred.jdbc.output.table.name" = "JDBCTable",
-  "mapred.jdbc.password"=""
+  "mapred.jdbc.password"="",
+  "mapred.jdbc.hive.lazy.split"= "false"
 );
+```
+
+```
+NOTE: "mapred.jdbc.hive.lazy.split"= "true" property enables 
+       split computation to be done by mappers internally.
 ```
 
 ##Sample Queries##
