@@ -67,7 +67,8 @@ public class RecordReaderWrapper<K, V> implements RecordReader<K, V> {
     
         TaskAttemptID taskAttemptID = TaskAttemptID.forName(oldJobConf
                 .get("mapred.task.id"));
-        if( ((oldJobConf.get(Constants.VPC_SPLIT_MAPPERS)).toUpperCase()).equals("TRUE") ){
+        if(oldJobConf.get(Constants.VPC_SPLIT_MAPPERS) != null &&
+                (oldJobConf.get(Constants.VPC_SPLIT_MAPPERS)).toUpperCase().equals("TRUE")){
             lazySplitActive = true;
             ResultSet results = null;  
             Statement statement = null;

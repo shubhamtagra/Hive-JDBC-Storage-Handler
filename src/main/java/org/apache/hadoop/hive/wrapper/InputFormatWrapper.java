@@ -67,10 +67,13 @@ public class InputFormatWrapper<K, V> implements
     }
 
     public List<org.apache.hadoop.mapreduce.InputSplit> getSplitsForVPC(JobConf job, 
-        List<org.apache.hadoop.mapreduce.InputSplit> splits, TaskAttemptContext taskContext){
+        List<org.apache.hadoop.mapreduce.InputSplit> splits, TaskAttemptContext taskContext)
+            throws IOException, InterruptedException
+    {
      
-         try{
-            if( ((job.get(Constants.VPC_SPLIT_MAPPERS)).toUpperCase()).equals("TRUE") ){
+         //try{
+            if(job.get(Constants.VPC_SPLIT_MAPPERS) !=null &&
+                    (job.get(Constants.VPC_SPLIT_MAPPERS)).toUpperCase().equals("TRUE") ) {
                 int chunks = job.getInt("mapred.map.tasks", 1);
                 splits = new ArrayList<org.apache.hadoop.mapreduce.InputSplit>();
                 for (int i = 0; i < chunks; i++) {
@@ -83,10 +86,10 @@ public class InputFormatWrapper<K, V> implements
                     splits = realInputFormat.getSplits(taskContext);
             }
             return splits;
-        } catch (Exception e) {
-            
-        }
-        return null;
+        /*} catch (Exception e) {
+
+        }*/
+        //return null;
     }
 
     @Override
