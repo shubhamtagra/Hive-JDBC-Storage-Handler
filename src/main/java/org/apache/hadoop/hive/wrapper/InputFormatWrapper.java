@@ -26,7 +26,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.Text;
 
 import org.apache.hadoop.mapred.FileInputFormat;
 import org.apache.hadoop.mapred.RecordReader;
@@ -35,7 +34,6 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.FileSplit;
 import org.apache.hadoop.hive.shims.ShimLoader;
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.mapreduce.lib.db.DBInputFormat.*;
 import org.apache.hadoop.hive.jdbc.storagehandler.JdbcDBInputSplit;
 import org.apache.hadoop.hive.jdbc.storagehandler.Constants;
@@ -67,26 +65,23 @@ public class InputFormatWrapper<K, V> implements
     }
 
     public List<org.apache.hadoop.mapreduce.InputSplit> getSplitsForVPC(JobConf job, 
-        List<org.apache.hadoop.mapreduce.InputSplit> splits, TaskAttemptContext taskContext){
-     
-         try{
-            if( ((job.get(Constants.VPC_SPLIT_MAPPERS)).toUpperCase()).equals("TRUE") ){
-                int chunks = job.getInt("mapred.map.tasks", 1);
-                splits = new ArrayList<org.apache.hadoop.mapreduce.InputSplit>();
-                for (int i = 0; i < chunks; i++) {
-                    DBInputSplit split;
-                    split = new JdbcDBInputSplit(i);
-                    splits.add(split);
-                }
+        List<org.apache.hadoop.mapreduce.InputSplit> splits, TaskAttemptContext taskContext)
+            throws IOException, InterruptedException
+    {
+        if(job.get(Constants.LAZY_SPLIT) !=null &&
+                (job.get(Constants.LAZY_SPLIT)).toUpperCase().equals("TRUE") ) {
+            int chunks = job.getInt("mapred.map.tasks", 1);
+            splits = new ArrayList<org.apache.hadoop.mapreduce.InputSplit>();
+            for (int i = 0; i < chunks; i++) {
+                DBInputSplit split;
+                split = new JdbcDBInputSplit(i);
+                splits.add(split);
             }
-            else{
-                    splits = realInputFormat.getSplits(taskContext);
-            }
-            return splits;
-        } catch (Exception e) {
-            
         }
-        return null;
+        else{
+                splits = realInputFormat.getSplits(taskContext);
+        }
+        return splits;
     }
 
     @Override
