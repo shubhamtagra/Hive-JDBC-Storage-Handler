@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.jdbc.storagehandler.exceptions.PredicateMissingException;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.JobConf;
@@ -65,6 +66,10 @@ public class JdbcInputFormat extends InputFormatWrapper {
     @Override
     public RecordReader getRecordReader(InputSplit split, JobConf job,
             Reporter reporter) throws IOException {
+        if ((job.get(TableScanDesc.FILTER_TEXT_CONF_STR) == null || job.get(TableScanDesc.FILTER_TEXT_CONF_STR).length() == 0) &&
+                job.getBoolean(Constants.PREDICATE_COMPULSORY, false)) {
+            throw new PredicateMissingException();
+        }
         JdbcSerDeHelper.setFilters(job);
         ((org.apache.hadoop.mapreduce.lib.db.DBInputFormat) realInputFormat)
                 .setConf(job);
