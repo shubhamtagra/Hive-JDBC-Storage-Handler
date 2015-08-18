@@ -59,6 +59,7 @@ public class JdbcInputFormat extends InputFormatWrapper {
     public InputSplit[] getSplits(JobConf job, int numSplits)
             throws IOException {
         JdbcSerDeHelper.setFilters(job);
+        job.setInt("mapred.map.tasks", numSplits);
         ((org.apache.hadoop.mapreduce.lib.db.DBInputFormat) realInputFormat)
                 .setConf(job);
         return super.getSplits(job, numSplits);

@@ -39,6 +39,8 @@ import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.JobContext;
 import org.apache.hadoop.mapreduce.RecordReader;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
+import org.apache.hadoop.mapreduce.lib.db.MySQLDBRecordReader;
+import org.apache.hadoop.mapreduce.lib.db.OracleDBRecordReader;
 import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
@@ -93,17 +95,33 @@ public class JdbcDBInputFormat<T extends DBWritable>
         Class<T> inputClass = (Class<T>) (dbConf.getInputClass());
         try{
             LOG.info("DB Type >> " + super.getDBProductName());
-            if((super.getDBProductName()).startsWith("MICROSOFT SQL SERVER") ){
+            String dbProductName = super.getDBProductName().toUpperCase();
+            Configuration conf = dbConf.getConf();
+            if (dbProductName.startsWith("MICROSOFT SQL SERVER")) {
                 
                 return new MicrosoftDBRecordReader<T>((DBInputFormat.DBInputSplit)split, inputClass,
                 dbConf.getConf(), connection, super.getDBConf(), conditions, fieldNames,
                 tableName);
             
+            } else if (dbProductName.startsWith("ORACLE")) {
+                // use Oracle-specific db reader.
+                return new OracleDBRecordReader<T>((DBInputFormat.DBInputSplit) split, inputClass,
+                        conf, getConnection(), getDBConf(), conditions, fieldNames,
+                        tableName);
+            } else if (dbProductName.startsWith("MYSQL")) {
+                // use MySQL-specific db reader.
+                return new MySQLDBRecordReader<T>((DBInputFormat.DBInputSplit) split, inputClass,
+                        conf, getConnection(), getDBConf(), conditions, fieldNames,
+                        tableName);
+            } else {
+                // Generic reader.
+                return new GenericDBRecordReader<>((DBInputFormat.DBInputSplit) split, inputClass,
+                        conf, getConnection(), getDBConf(), conditions, fieldNames,
+                        tableName);
             }
         }catch (SQLException ex) {
            throw new IOException(ex.getMessage());
         }
-        return super.createRecordReader(split,context);
     }
 
 
