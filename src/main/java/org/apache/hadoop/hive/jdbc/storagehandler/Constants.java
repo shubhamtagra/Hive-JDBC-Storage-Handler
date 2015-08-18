@@ -23,7 +23,8 @@ public final class Constants {
 
     public static final String LIST_COLUMNS = "columns";
     public static final String LIST_COLUMN_TYPES = "columns.types";
-    public static final String VPC_SPLIT_MAPPERS = "mapred.jdbc.hive.lazy.split";
+    public static final String LAZY_SPLIT = "mapred.jdbc.hive.lazy.split";
+    public static final String PREDICATE_REQUIRED = "jdbc.storage.handler.predicate.required";
     public static final String INPUT_FETCH_SIZE = "jdbc.storage.handler.input.fetch.size";
 
     public static final int DEFAULT_INPUT_FETCH_SIZE = 1000;

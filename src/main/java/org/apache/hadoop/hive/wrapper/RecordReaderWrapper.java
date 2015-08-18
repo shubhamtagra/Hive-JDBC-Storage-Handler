@@ -16,8 +16,6 @@
 
 package org.apache.hadoop.hive.wrapper;
 
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
 
 import org.apache.hadoop.mapred.RecordReader;
@@ -25,8 +23,6 @@ import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.FileSplit;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.Reporter;
-import org.apache.hadoop.io.Text;
-import org.apache.hadoop.mapreduce.lib.db.DBInputFormat;
 import org.apache.hadoop.mapreduce.lib.db.DBConfiguration;
 
 import org.apache.hadoop.mapreduce.InputFormat;
@@ -36,7 +32,7 @@ import org.apache.hadoop.hive.shims.ShimLoader;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import java.util.StringTokenizer;
+
 import java.sql.*;
 import org.apache.hadoop.hive.jdbc.storagehandler.Constants;
 import org.apache.hadoop.hive.jdbc.storagehandler.JdbcDBInputSplit;
@@ -67,7 +63,8 @@ public class RecordReaderWrapper<K, V> implements RecordReader<K, V> {
     
         TaskAttemptID taskAttemptID = TaskAttemptID.forName(oldJobConf
                 .get("mapred.task.id"));
-        if( ((oldJobConf.get(Constants.VPC_SPLIT_MAPPERS)).toUpperCase()).equals("TRUE") ){
+        if(oldJobConf.get(Constants.LAZY_SPLIT) != null &&
+                (oldJobConf.get(Constants.LAZY_SPLIT)).toUpperCase().equals("TRUE")){
             lazySplitActive = true;
             ResultSet results = null;  
             Statement statement = null;

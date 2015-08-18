@@ -20,36 +20,15 @@ package org.apache.hadoop.hive.jdbc.storagehandler;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.io.LongWritable;
+
+import org.apache.hadoop.hive.jdbc.storagehandler.exceptions.PredicateMissingException;
 import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.mapreduce.lib.db.DBInputFormat;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
-import org.apache.hadoop.fs.Path;
-import java.io.DataInput;
-import java.io.DataOutput;
-import org.apache.hadoop.mapreduce.InputFormat;
 
-import org.apache.hadoop.mapred.FileInputFormat;
-import org.apache.hadoop.mapred.FileSplit;
-import org.apache.hadoop.util.ReflectionUtils;
-import org.apache.hadoop.io.Writable;
-import org.apache.hadoop.io.WritableUtils;
-import org.apache.hadoop.mapreduce.lib.db.DBInputFormat;
-import org.apache.hadoop.mapred.lib.db.DBConfiguration;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import org.apache.hadoop.util.StringUtils;
-import org.apache.hadoop.mapred.JobConf;
-import org.apache.hadoop.hive.shims.ShimLoader;
-import org.apache.hadoop.mapreduce.TaskAttemptContext;
-import org.apache.hadoop.mapreduce.TaskAttemptID;
 import org.apache.hadoop.hive.wrapper.InputFormatWrapper;
 
 public class JdbcInputFormat extends InputFormatWrapper {
@@ -65,6 +44,11 @@ public class JdbcInputFormat extends InputFormatWrapper {
     @Override
     public RecordReader getRecordReader(InputSplit split, JobConf job,
             Reporter reporter) throws IOException {
+        if ((job.get(TableScanDesc.FILTER_TEXT_CONF_STR) == null ||
+                job.get(TableScanDesc.FILTER_TEXT_CONF_STR).length() == 0) &&
+                job.getBoolean(Constants.PREDICATE_REQUIRED, false)) {
+            throw new PredicateMissingException();
+        }
         JdbcSerDeHelper.setFilters(job);
         ((org.apache.hadoop.mapreduce.lib.db.DBInputFormat) realInputFormat)
                 .setConf(job);
