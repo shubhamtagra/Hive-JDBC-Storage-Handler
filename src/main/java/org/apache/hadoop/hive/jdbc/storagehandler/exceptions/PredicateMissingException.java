@@ -1,7 +1,6 @@
 /*
  * Copyright 2013-2015 Qubole
- * Copyright 2013-2015 Makoto YUI
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -14,17 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.hadoop.hive.jdbc.storagehandler.exceptions;
 
-package org.apache.hadoop.hive.jdbc.storagehandler;
+import java.io.IOException;
 
-public final class Constants {
-
-    public static final String LIST_COLUMNS = "columns";
-    public static final String LIST_COLUMN_TYPES = "columns.types";
-    public static final String LAZY_SPLIT = "mapred.jdbc.hive.lazy.split";
-    public static final String PREDICATE_REQUIRED = "jdbc.storage.handler.predicate.required";
-
-    private Constants() {
+/**
+ * Created by stagra on 7/23/15.
+ */
+public class PredicateMissingException extends RuntimeException
+{
+    public PredicateMissingException() {
+        super("No conditions available for pushdown");
     }
-
 }
